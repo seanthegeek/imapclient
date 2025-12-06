@@ -44,6 +44,17 @@ class IMAP4_TLS(imaplib.IMAP4):
         imaplib.IMAP4.__init__(self, host, port)
         self.file: io.BufferedReader
 
+    # --- Compatibility shim for Python 3.14+'s read-only IMAP4.file ----
+    @property
+    def file(self):
+        # Use the same backing attribute that imaplib.IMAP4 uses so that
+        # IMAP4.shutdown() etc. still work as intended.
+        return getattr(self, "_file", None)
+
+    @file.setter
+    def file(self, value):
+        self._file = value
+
     def open(
         self, host: str = "", port: int = 993, timeout: Optional[float] = None
     ) -> None:
